@@ -11,7 +11,7 @@ import { useNavigate } from "react-router-dom";
 import OpenAI from "openai";
 const YOUTUBE_SEARCH_URL = 'https://www.googleapis.com/youtube/v3/search';
 
-const openai = new OpenAI();
+const openai = new OpenAI({apiKey: APIKeys.OpenAIAPIKey, dangerouslyAllowBrowser: true});
 interface OptionType {
   value: string;
   label: string;
@@ -129,86 +129,72 @@ const CurriculumGenerator = () => {
   const generateCurriculum = async () => {
     setIsLoading(true); // Start loading
     const prompt = `
-    [INST]
-      Generate a detailed curriculum plan based on the following details:
-      - Project name: ${projectName} 
-      - Timeline: ${timeline} (the lenth of the course)
-      - Project Summary: ${projectSummary} (details of what the project is and what it includes)
-      - Experience Level: ${experienceLevel} (student's experience level)
-      - hours spent every week: ${numClassesPerWeek} (hours in class every week)
-      - Class Days: ${classDays.join(", ")} (the days the class is held)
-      Provide a breakdown of topics, sessions, and resources for material preparation.
-      distruibute the material based on the number of hours that is being spent in the subject between the number of classes there is in one week.
-      For the resources, return keywords for each session that can be searched on YouTube using the YouTube API.
-      Format the keywords like this: "Keywords for YouTube: keyword1, keyword2, keyword3".
-      return the result as text in a JSON FILE just like the format below. This is very crucial to the application
-      "notes": "Adjust the number of lessons and topics based on the size of the timeline and the number of classes scheduled for this week."
-      "additional_instructions": "Please customize this template to fit the specific timeline of your course and the number of lessons or classes you plan to conduct each week. Add or remove lessons, topics, and resources as necessary to provide a comprehensive and balanced learning experience."
-      {
-        "title": "",
-        "weeks": [
-          {
-            "title": "",
-            "lessons": [
-              {
-                "title": "",
-                "topics": [],
-                "resources": [],
-                "search_keywords": []
-              },
-              {
-                "title": "",
-                "topics": [],
-                "resources": [],
-                "search_keywords": []
-              }
-              // Add or remove lessons as needed
-            ],
-            "hours": 0,
-            
-          }
-        ],
-        
-      }
-      
-    [/INST]
+    Generate a detailed JSON curriculum plan for a project with the following details:
+    - Project Name: "${projectName}"
+    - Timeline: "${timeline}"
+    - Project Summary: "${projectSummary}"
+    - Experience Level: "${experienceLevel}"
+    - Hours per Week: "${numClassesPerWeek}"
+    - Class Days: "${classDays.join(", ")}"
+    
+    The curriculum should include weekly breakdowns, each containing lessons with titles, topics, resources, and YouTube search keywords. Distribute the material based on the total hours per week and the number of classes. Each lesson's resources should be formatted as YouTube search keywords.
+    
+    The JSON structure should be as follows:
+    {
+      "title": "<Project Name>",
+      "timeline": "<Timeline>",
+      "summary": "<Project Summary>",
+      "experienceLevel": "<Experience Level>",
+      "hoursPerWeek": <Hours per Week>,
+      "classDays": ["<Day1>", "<Day2>", ...],
+      "weeks": [
+        {
+          "title": "<Week Title>",
+          "lessons": [
+            {
+              "title": "<Lesson Title>",
+              "topics": ["<Topic1>", "<Topic2>", ...],
+              "resources": ["<Resource1>", "<Resource2>", ...],
+              "youtubeKeywords": ["<Keyword1>", "<Keyword2>", ...]
+            },
+            // More lessons
+          ],
+          "hours": <Hours for the Week>
+        },
+        // More weeks
+      ],
+      "notes": "Adjust the number of lessons and topics based on the size of the timeline and the number of classes scheduled for each week.",
+      "additionalInstructions": "Customize this template to fit the specific timeline of your course and the number of lessons or classes you plan to conduct each week. Add or remove lessons, topics, and resources as necessary to provide a comprehensive and balanced learning experience."
+    }
     `;
     
-
-    const options = {
-      method: "POST",
-      url: "https://api.together.xyz/inference",
-      headers: {
-        accept: "application/json",
-        Authorization: "Bearer " + APIKeys.TogetherAPIKey,
-      },
-      data: {
-        model: "togethercomputer/llama-2-13b-chat",
+    try {
+      console.log("Sending request to OpenAI..."); // Debug log
+      const response = await openai.createCompletion({
+        model: "asst_tN6vVKkXrNn0m6g4XOsRFw0V", // Use your custom model name
         prompt: prompt,
-        max_tokens: 2635,
+        max_tokens: 4090,
         temperature: 0.7,
         top_p: 0.7,
         top_k: 50,
         repetition_penalty: 1,
-      },
-    };
-
-    try {
-      const response = await axios.request(options);
-      const generatedText: string = response.data.output.choices[0].text;
+      });
+      console.log("Response from OpenAI:", response);
+      const generatedText: string = response.choices[0].text;
+      console.log("Generated text:", generatedText); 
       console.log(generatedText);
       setCurriculum(generatedText);
 
-      const keywordsLine =
-        generatedText
-          .split("\n")
-          .find((line) => line.startsWith("Keywords for YouTube:")) || "";
-      const extractedKeywords: string[] = keywordsLine
-        .substring(22)
-        .split(",")
-        .map((keyword) => keyword.trim());
-      setKeywords(extractedKeywords);
-      searchYouTube(keywords);
+      // const keywordsLine =
+      //   generatedText
+      //     .split("\n")
+      //     .find((line) => line.startsWith("Keywords for YouTube:")) || "";
+      // const extractedKeywords: string[] = keywordsLine
+      //   .substring(22)
+      //   .split(",")
+      //   .map((keyword) => keyword.trim());
+      // setKeywords(extractedKeywords);
+      // searchYouTube(keywords);
       await saveCurriculum({ description: generatedText });
     } catch (error) {
       setError("Failed to generate curriculum");

@@ -4,5 +4,6 @@ const openAIAPIKey: string = '2YaeeYQbEumJiFBqsVH0T3BlbkFJJZV4mRfGCps0z3q2NmY4'
 const opneAIAssistantID: string = 'asst_tN6vVKkXrNn0m6g4XOsRFw0V';
 export const APIKeys = {
     TogetherAPIKey: togetherAPIKey,
-    googleAPIKey:googleAPIKey
+    googleAPIKey:googleAPIKey,
+    OpenAIAPIKey: openAIAPIKey
 }
