@@ -129,7 +129,6 @@ const CurriculumGenerator = () => {
 
   const generateCurriculum = async () => {
     setIsLoading(true); // Start loading
-    const newThread = openai.beta.threads.create();
     const prompt = `
     Generate a detailed JSON curriculum plan for a project with the following details:
     - Project Name: "${projectName}"
@@ -169,6 +168,16 @@ const CurriculumGenerator = () => {
       "additionalInstructions": "Customize this template to fit the specific timeline of your course and the number of lessons or classes you plan to conduct each week. Add or remove lessons, topics, and resources as necessary to provide a comprehensive and balanced learning experience."
     }
     `;
+    
+   
+    const newThread = await openai.beta.threads.create();
+    const message = await openai.beta.threads.create(
+      newThread.id,
+      {
+        role: "user",
+        content: prompt
+      }
+    )
     
     try {
       console.log("Sending request to OpenAI..."); // Debug log
