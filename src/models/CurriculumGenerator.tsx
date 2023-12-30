@@ -12,6 +12,7 @@ import OpenAI from "openai";
 const YOUTUBE_SEARCH_URL = 'https://www.googleapis.com/youtube/v3/search';
 
 const openai = new OpenAI({apiKey: APIKeys.OpenAIAPIKey, dangerouslyAllowBrowser: true});
+const my_assistant = openai.beta.assistants.retrieve("asst_tN6vVKkXrNn0m6g4XOsRFw0V");
 interface OptionType {
   value: string;
   label: string;
@@ -128,6 +129,7 @@ const CurriculumGenerator = () => {
 
   const generateCurriculum = async () => {
     setIsLoading(true); // Start loading
+    const newThread = openai.beta.threads.create();
     const prompt = `
     Generate a detailed JSON curriculum plan for a project with the following details:
     - Project Name: "${projectName}"
