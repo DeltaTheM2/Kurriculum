@@ -9,6 +9,7 @@ import "./loading.css"; // Create a loading.css file with your loading bar style
 import { useNavigate } from "react-router-dom";
 
 import OpenAI from "openai";
+import { threadId } from "worker_threads";
 const YOUTUBE_SEARCH_URL = 'https://www.googleapis.com/youtube/v3/search';
 
 const openai = new OpenAI({apiKey: APIKeys.OpenAIAPIKey, dangerouslyAllowBrowser: true});
@@ -178,7 +179,7 @@ const CurriculumGenerator = () => {
         content: prompt
       }
     )
-    
+    const run = openai.beta.threads.runs.create(threadId: newThread.id, assistantId: (await my_assistant).id)
     try {
       console.log("Sending request to OpenAI..."); // Debug log
       const response = await openai.createCompletion({
