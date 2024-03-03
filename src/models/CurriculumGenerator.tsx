@@ -171,20 +171,24 @@ const CurriculumGenerator = () => {
     `;
     
    
-    const newThread = await openai.beta.threads.create();
-    const message = await openai.beta.threads.create(
+    const newThread = await openai.beta.threads.create({
+      messages: [
+        {
+        "role": "user",
+        "content": prompt
+    }]
+    });
+
+    const run = await openai.beta.threads.runs.create(
       newThread.id,
-      {
-        role: "user",
-        content: prompt
-      }
-    )
-    const run = openai.beta.threads.runs.create(threadId: newThread.id, assistantId: (await my_assistant).id)
+      {assistant_id: (await my_assistant).id}
+    );
+
     try {
       console.log("Sending request to OpenAI..."); // Debug log
       const response = await openai.createCompletion({
         model: "asst_tN6vVKkXrNn0m6g4XOsRFw0V", // Use your custom model name
-        prompt: prompt,
+        prompt: prompt, 
         max_tokens: 4090,
         temperature: 0.7,
         top_p: 0.7,
