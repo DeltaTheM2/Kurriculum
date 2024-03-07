@@ -186,14 +186,12 @@ const CurriculumGenerator = () => {
 
     try {
       console.log("Sending request to OpenAI..."); // Debug log
-      const response = await openai.createCompletion({
+      const response = await openai.completions.create({
         model: "asst_tN6vVKkXrNn0m6g4XOsRFw0V", // Use your custom model name
         prompt: prompt, 
         max_tokens: 4090,
         temperature: 0.7,
         top_p: 0.7,
-        top_k: 50,
-        repetition_penalty: 1,
       });
       console.log("Response from OpenAI:", response);
       const generatedText: string = response.choices[0].text;
